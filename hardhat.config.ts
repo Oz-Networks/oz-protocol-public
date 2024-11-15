@@ -18,6 +18,13 @@ const config: HardhatUserConfig = {
       },
     ],
   },
+  networks: {
+    oztestnet: {
+      url: "https://rpc.ozprotocol.com/ext/bc/v3bKtvrWywFjDNdP5LWsomJG6k9h5P7Ke8WQykoSzrL2CMuFb/rpc",
+      accounts: [process.env.PRIVATE_KEY as string],
+      chainId: 7589,
+    }
+  },
   paths: {
     sources: "./contracts",
     tests: "./test",

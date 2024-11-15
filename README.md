@@ -1,57 +1,109 @@
+# Collector Protocol
 
-# Collector Factory Contract
+A decentralized protocol for managing data provider subscriptions with integrated reputation tracking and NFT-based access control.
 
-The `CollectorFactory` contract is designed to create and manage collectors, handle reputation requests, and store reputation scores. This README provides a detailed guide on deploying the contract using ethers.js and interacting with its functions using viem/wagmi from a React.js dApp.
+## Overview
 
-## Table of Contents
-
-- [Contract Overview](#contract-overview)
-- [Contract Deployment](#contract-deployment)
-- [Functions](#functions)
-  - [createCollector](#createcollector)
-  - [requestReputation](#requestreputation)
-  - [storeReputationScore](#storereputationscore)
-  - [listCollectorsByValidation](#listcollectorsbyvalidation)
-  - [handleCollectorCreator](#handlecollectorcreator)
-  - [handleReputationProvider](#handlereputationprovider)
-  - [handleCollectorValidity](#handlecollectorvalidity)
-  - [getReputationScore](#getreputationscore)
-- [Events](#events)
-- [Errors](#errors)
-
-
-## Contract Overview
-
-The `CollectorFactory` contract includes functionalities to create collectors, request and store reputation scores, and manage collector validity and reputation providers.
+The Collector Protocol consists of three main contracts:
+- `CollectorRegistry`: Single source of truth for the current factory implementation
+- `CollectorFactory`: Creates and manages Collector and SubscriptionManager pairs
+- `SubscriptionManager`: Handles subscription logic and payment distribution
 
 ### Key Features
 
-- **Create Collectors**: Allows whitelisted addresses to create new collector contracts.
-- **Request Reputation**: Collectors can request reputation scores from approved reputation providers.
-- **Store Reputation**: Reputation providers can store reputation scores for collectors.
-- **Handle Collector Creator**: Owners can activate or deactivate who can create collectors.
-- **Manage Validity**: Owners can activate or deactivate collectors.
+- **Create Collectors**: Allows whitelisted addresses to create new collector contracts
+- **Request Reputation**: Collectors can request reputation scores from approved reputation providers
+- **Store Reputation**: Reputation providers can store reputation scores for collectors
+- **Handle Collector Creator**: Owners can activate or deactivate who can create collectors
+- **Manage Validity**: Owners can activate or deactivate collectors
+- **NFT-Based Access**: Uses NFTs for data provider access control
 
-### Smart Contract
+## Installation & Setup
 
-```solidity
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.24;
-
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import { SubscriptionManager } from "./SubscriptionManager.sol";
-
-contract CollectorFactory is Ownable {
-    // ... Contract code here
-}
+```bash
+npm install
 ```
 
-## Contract Deployment
+### Configuration
 
-To deploy the `CollectorFactory` contract, use the following ethers.js script:
+Create a `.env` file in the root directory:
 
-```javascript
+```env
+PRIVATE_KEY=your_private_key_here
+COLLECTOR_NAME="Your Collector Name"
+COLLECTOR_SYMBOL="SYMB"
+TOKEN_URI="your_token_uri_here"
+FEE_PER_DAY=1
+COLLECTOR_FEE=0.2
+```
+
+## Deployment Flow
+
+### 1. Initial Setup
+
+```bash
+# First deploy the Registry (only needed once per network)
+npm run deploy:registry
+
+# Deploy the Factory and register it with the Registry
+npm run deploy:factory
+
+# Verify deployment
+npm run factory:status
+```
+
+### 2. Creating New Collectors
+
+```bash
+# Deploy a new collector instance
+npm run deploy:collector
+```
+
+## Management Scripts
+
+### List & Monitor
+
+```bash
+# List all collectors
+npm run list:collectors
+
+# Check factory status and history
+npm run factory:status
+```
+
+### Reputation Management
+
+```bash
+# Check reputation score
+npm run reputation:check
+
+# Add/Remove reputation providers
+npm run reputation:add
+npm run reputation:remove
+```
+
+### Creator Management
+
+```bash
+# Add/Remove collector creators
+npm run creator:add
+npm run creator:remove
+```
+
+### Collector Management
+
+```bash
+# Set collector validity
+npm run collector:validity
+```
+
+## Smart Contract Interaction
+
+### Using ethers.js
+
+To deploy the `CollectorFactory` contract:
+
+```typescript
 const { ethers } = require("ethers");
 
 async function deployCollectorFactory() {
@@ -65,31 +117,13 @@ async function deployCollectorFactory() {
 
   console.log("CollectorFactory deployed to:", collectorFactory.address);
 }
-
-deployCollectorFactory().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
 ```
 
-Replace `YOUR_RPC_PROVIDER_URL` and `YOUR_PRIVATE_KEY` with your actual RPC provider URL and private key.
+### Using viem/wagmi in React
 
-## Functions
+Example of creating a collector:
 
-### createCollector
-
-Creates a new collector. The connected wallet must be whitelisted using [handleCollectorCreator](#handlecollectorcreator) function
-
-**Parameters:**
-- `IERC721 nft_`: The address of the NFT contract.
-- `uint256 feePerDay_`: The fee per day for the subscription.
-- `uint256 collectorFee_`: The fee for the collector.
-
-**Returns:**
-- `address`: The address of the newly created collector.
-
-**Usage:**
-```javascript
+```typescript
 import { useContractWrite } from 'wagmi';
 import { abi } from './CollectorFactory.json';
 
@@ -103,187 +137,65 @@ const { write } = useContractWrite({
 write();
 ```
 
-### requestReputation
+See [Contract Functions](#contract-functions) for more interaction examples.
 
-Requests reputation for a data provider.
+## Contract Functions
 
-**Parameters:**
-- `address collector`: The address of the collector.
-- `address dataProvider`: The address of the data provider.
+Detailed documentation of contract functions and their usage is available in the [Contract Functions Documentation](./CONTRACT_FUNCTIONS.md).
 
-**Usage:**
-```javascript
-import { useContractWrite } from 'wagmi';
-import { abi } from './CollectorFactory.json';
+## Architecture
 
-const { write } = useContractWrite({
-  address: 'CONTRACT_ADDRESS',
-  abi,
-  functionName: 'requestReputation',
-  args: [collectorAddress, dataProviderAddress],
-});
+### Registry Pattern
 
-write();
+The protocol uses a registry pattern to maintain upgradeability:
+1. Registry maintains the current factory address
+2. New factory versions can be deployed without breaking existing collectors
+3. Full history of factory deployments is maintained on-chain
+
+### Collector Creation Flow
+
+```
+CollectorRegistry
+└─ Points to current CollectorFactory
+   └─ Creates new collector instances:
+      ├─ Deploys Collector (NFT)
+      └─ Deploys SubscriptionManager
 ```
 
-### storeReputationScore
+## Version Management
 
-Stores the reputation score provided by a reputation provider.
+Update contract versions in versions.json:
 
-**Parameters:**
-- `address collector`: The address of the collector.
-- `address dataProvider`: The address of the data provider.
-- `uint256 score`: The reputation score. Must be within [0, 100]
-
-**Usage:**
-```javascript
-import { useContractWrite } from 'wagmi';
-import { abi } from './CollectorFactory.json';
-
-const { write } = useContractWrite({
-  address: 'CONTRACT_ADDRESS',
-  abi,
-  functionName: 'storeReputationScore',
-  args: [collectorAddress, dataProviderAddress, score],
-});
-
-write();
+```bash
+CONTRACT=SubscriptionManager VERSION=1.0.1 npm run version:update
 ```
 
-### listCollectorsByValidation
+## Deployment History
 
-Lists collectors based on their validity status.
+All deployments are tracked in `deployments.json` with the following information:
+- Contract addresses
+- Versions
+- Deployment timestamps
+- Parameters used
+- Network information
 
-**Parameters:**
-- `bool validation`: The validity status to filter collectors.
+## Testing
 
-**Returns:**
-- `CollectorInfo[]`: An array of `CollectorInfo` structs.
-
-**Usage:**
-```javascript
-import { useContractRead } from 'wagmi';
-import { abi } from './CollectorFactory.json';
-
-const { data, isLoading } = useContractRead({
-  address: 'CONTRACT_ADDRESS',
-  abi,
-  functionName: 'listCollectorsByValidation',
-  args: [validationStatus],
-});
+```bash
+npm test
 ```
 
-### handleCollectorCreator
+## Network Support
 
-Adds or removes a collector creator.
+Currently supports:
+- Oz Protocol Testnet
 
-**Parameters:**
-- `address collector`: The address of the creator to be handled.
-- `bool active`: The status of the creator (true for adding, false for removing).
+## Security Considerations
 
-**Usage:**
-```javascript
-import { useContractWrite } from 'wagmi';
-import { abi } from './CollectorFactory.json';
-
-const { write } = useContractWrite({
-  address: 'CONTRACT_ADDRESS',
-  abi,
-  functionName: 'handleCollectorCreator',
-  args: [collectorAddress, activeStatus],
-});
-
-write();
-```
-
-### handleReputationProvider
-
-Adds or removes a reputation provider.
-
-**Parameters:**
-- `address reputationProvider`: The address of the reputation provider.
-- `bool active`: The status of the reputation provider (true for adding, false for removing).
-
-**Usage:**
-```javascript
-import { useContractWrite } from 'wagmi';
-import { abi } from './CollectorFactory.json';
-
-const { write } = useContractWrite({
-  address: 'CONTRACT_ADDRESS',
-  abi,
-  functionName: 'handleReputationProvider',
-  args: [reputationProviderAddress, activeStatus],
-});
-
-write();
-```
-
-### handleCollectorValidity
-
-Activates or disables a collector.
-
-**Parameters:**
-- `address collector`: The address of the collector.
-- `bool validity`: The status of the collector.
-
-**Usage:**
-```javascript
-import { useContractWrite } from 'wagmi';
-import { abi } from './CollectorFactory.json';
-
-const { write } = useContractWrite({
-  address: 'CONTRACT_ADDRESS',
-  abi,
-  functionName: 'handleCollectorValidity',
-  args: [collectorAddress, validityStatus],
-});
-
-write();
-```
-
-### getReputationScore
-
-Retrieves the reputation score for a specific collector and data provider.
-
-**Parameters:**
-- `address collector`: The address of the collector.
-- `address dataProvider`: The address of the data provider.
-
-**Returns:**
-- `uint256`: The reputation score.
-
-**Usage:**
-```javascript
-import { useContractRead } from 'wagmi';
-import { abi } from './CollectorFactory.json';
-
-const { data, isLoading } = useContractRead({
-  address: 'CONTRACT_ADDRESS',
-  abi,
-  functionName: 'getReputationScore',
-  args: [collectorAddress, dataProviderAddress],
-});
-```
-
-## Events
-
-- `CollectorCreated(address collector, address collectorOwner)`
-- `ReputationRequestCreated(address collector, address dataProvider, uint256 timestamp)`
-- `ReputationScoreProvided(address collector, address dataProvider, uint256 score)`
-- `ReputationProviderChanged(address reputationProvider, bool active)`
-- `CollectorCreatorChanged(address collector, bool active)`
-- `CollectorValidityChanged(address collector, bool validity)`
-
-## Errors
-
-- `CollectorNotFound`
-- `ReputationRequestAlreadyExist`
-- `ReputationRequestNotFound`
-- `InvalidProvider`
-- `InvalidCollectorOwner`
-- `InvalidCreator`
-- `InvalidScore`
+- NFT-based access control for data providers
+- Reputation system for quality assurance
+- Whitelisted collector creators
+- Valid collector registry
 
 ## License
 

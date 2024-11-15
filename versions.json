@@ -1,0 +1,7 @@
+{
+  "contracts": {
+    "CollectorFactory": "1.0.0",
+    "SubscriptionManager": "1.0.0",
+    "Collector": "1.0.0"
+  }
+}

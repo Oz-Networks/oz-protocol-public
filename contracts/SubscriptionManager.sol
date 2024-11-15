@@ -31,6 +31,7 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
     /// @param subscriber The address of the subscriber
     struct Subscriber {
         address subscriber;
+        string recipient;
     }
 
     /// @notice Quality info item
@@ -96,7 +97,7 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
     /// @notice Subscription is still active
     error ActiveSubscription();
 
-    /// @notice Subscription is already eneded
+    /// @notice Subscription is already ended
     error SubscriptionAlreadyEnded();
 
     /// ------------ EVENTS ------------
@@ -166,7 +167,10 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
     /// ----------- MODIFIERS ----------
 
     modifier validDataProvider(address dataProvider) {
-        if (nft.balanceOf(dataProvider) == 0) {
+        // Add some debug logs
+        uint256 balance = nft.balanceOf(dataProvider);
+
+        if (balance == 0) {
             revert InvalidDataProvider();
         }
         _;
@@ -217,7 +221,6 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
     /// @param collectorFee_ New collector fee amount
     function setCollectorFee(uint256 collectorFee_) external onlyOwner {
         collectorFee = collectorFee_;
-
         emit CollectorFeeUpdated(collectorFee_);
     }
 
@@ -263,7 +266,7 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
         }
 
         // Add subscriber to data providers list
-        subscribers[dataProvider].push(Subscriber(msg.sender));
+        subscribers[dataProvider].push(Subscriber(msg.sender, recipient));
 
         // Store the subscription details
         subscription.recipient = recipient;

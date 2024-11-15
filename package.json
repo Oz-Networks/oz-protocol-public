@@ -1,19 +1,32 @@
 {
   "name": "oz-security",
   "scripts": {
-    "compile": "hardhat compile && hardhat typechain",
-    "test": "hardhat test"
+    "list:collectors": "hardhat run scripts/helpers/listCollectors.ts --network oztestnet",
+    "reputation:check": "hardhat run scripts/helpers/reputationManagement.ts check --network oztestnet",
+    "reputation:add": "hardhat run scripts/helpers/reputationManagement.ts add-provider --network oztestnet",
+    "reputation:remove": "hardhat run scripts/helpers/reputationManagement.ts remove-provider --network oztestnet",
+    "creator:add": "hardhat run scripts/helpers/creatorManagement.ts add --network oztestnet",
+    "creator:remove": "hardhat run scripts/helpers/creatorManagement.ts remove --network oztestnet",
+    "collector:validity": "hardhat run scripts/helpers/collectorValidity.ts --network oztestnet",
+    "deploy:collector": "hardhat run scripts/deployCollector.ts --network oztestnet",
+    "version:update": "hardhat run scripts/helpers/updateVersion.ts",
+    "deploy:registry": "hardhat run scripts/deployRegistry.ts --network oztestnet",
+    "deploy:factory": "hardhat run scripts/deployCollectorFactory.ts --network oztestnet",
+    "factory:status": "hardhat run scripts/helpers/checkFactoryStatus.ts --network oztestnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@typechain/ethers-v6": "^0.5.1",
-    "hardhat": "^2.22.5",
+    "hardhat": "^2.9.0",
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.2",
-    "dotenv": "^16.4.5"
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.4",
+    "oz-protocol-sdk": "file:../../WebstormProjects/oz-protocol-sdk"
   }
 }

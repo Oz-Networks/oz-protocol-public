@@ -1,0 +1,25 @@
+{
+  "oztestnet": {
+    "collector": "0x69448B102C3dd3821E20c6b478674D917b37540E",
+    "collectorParams": {
+      "name": "Default Collector",
+      "symbol": "COLL",
+      "tokenURI": "saucy"
+    },
+    "subscriptionManager": "0x0A77287BB0f6843E9B33cE9D01f009E67Df3806b",
+    "subscriptionManagerParams": {
+      "feePerDay": "1.0",
+      "collectorFee": "0.2"
+    },
+    "registry": "0x5bE0fA73aF08D77961f9b3ca04F8e7B1634c41A4",
+    "factories": [
+      {
+        "address": "0x0B36e2Ac77DA9b1516075cC46C556190DFd2cA79",
+        "version": "1.0.0",
+        "subscriptionManagerVersion": "1.0.0",
+        "deployedAt": "2024-11-15T12:09:08.480Z",
+        "deployedBy": "0x134206892c8AE560b08e9e8E0Efc40674c492E0b"
+      }
+    ]
+  }
+}
